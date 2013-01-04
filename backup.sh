@@ -3,15 +3,15 @@
 EXCLUDES=/home/snoopy/bin/backup.d/exclude.list
 BUACC="bijuws"
 BUDEST="/media/All-in/backup/$BUACC"
-BUDIR=`date +%M`
+BUDIR=`date +%Y-%m-%d`
+DEST="$BUDEST/$BUDIR"
 BUOPTS="--force --ignore-errors --delete-excluded --exclude-from=$EXCLUDES 
-      --delete --backup --backup-dir=/$BUDIR -a"
+      --delete --backup --backup-dir=$DEST -a -R --progress"
 
 while read source
 do
   SOURCE="/$source"
-  DEST="$BUDEST/$BUDIR/$source"
-  CURRENT="$BUDEST/current/$source"
+  CURRENT="$BUDEST/current"
   #Clean PERIOD destanation dir
   rm -rf $DEST
   #create target dirs
@@ -19,5 +19,5 @@ do
   mkdir -p $CURRENT
 
   echo "$SOURCE > $DEST"
-  rsync $BUOPTS $SOURCE $CURRENT
+  sudo rsync $BUOPTS $SOURCE $CURRENT
 done < /home/snoopy/bin/backup.d/sources.list
