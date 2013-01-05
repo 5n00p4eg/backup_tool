@@ -12,7 +12,7 @@ vim
 
 
 *Todo:
-Auto-find device for backup destanation by UUID/Label/SerialNumber etc.
+Auto-find device for backup destanation by UUID/Label/SerialNumber etc. (See bijuws config file)
 Remote backup
 Software related backups (mysql, etc)
 
