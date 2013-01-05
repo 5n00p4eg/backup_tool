@@ -1,0 +1,8 @@
+/etc
+/var/lib/mysql
+/var/log
+/var/mail
+/var/www
+/usr/local
+/srv
+/home
