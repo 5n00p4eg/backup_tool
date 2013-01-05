@@ -1,12 +1,13 @@
-#!/bin/bash
+##!/bin/bash
 
 SCRIPT_DIR=`dirname $0`
 SCRIPT_DIR=`cd $SCRIPT_DIR && pwd`
 . $SCRIPT_DIR/config.conf
 
-if [ $1 ] && [ -d "$SCRIPT_DIR/$1" ]; then
-  echo "YES";
-fi
+#if [ $1 ] && [ -d "$SCRIPT_DIR/$1" ]; then
+#if [ $1 ]; then
+#  echo "YES"
+#fi
 
 EXCLUDES="$SCRIPT_DIR/$SYSID/exclude.list"
 BUACC="$SYSID"
