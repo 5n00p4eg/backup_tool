@@ -10,12 +10,17 @@ else
     echo "$SCRIPT_DIR/$1/config.conf not found"
     exit 1;
   else
-    echo "Usage: $0 backup_name"
+    echo "Usage: $0 `hostname`"
     exit 1;
   fi
 fi
 
 . $SCRIPT_DIR/$1/config.conf
+
+if [ ! -d "$BUDESTDIR" ]; then
+  echo "Dest dir "$BUDESTDIR" not exist"
+  exit 1;
+fi
 
 EXCLUDES="$SCRIPT_DIR/$1/exclude.list"
 BUACC="$1"
@@ -30,7 +35,9 @@ do
   SOURCE="$source"
   CURRENT="$BUDEST/current"
   echo "$SOURCE > $DEST"
-  #Sudo required for system files backups
-  sudo rsync $BUOPTS $SOURCE $CURRENT
+  if [ ! $DEBUG ]; then
+    #Sudo required for system files backups
+    sudo rsync $BUOPTS $SOURCE $CURRENT
+  fi
 done < $SCRIPT_DIR/$1/sources.list
 
