@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#Uncoment line to enable debug
+#Bedug disable rsync command
+#export DEBUG="TRUE"
