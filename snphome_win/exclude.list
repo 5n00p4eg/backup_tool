@@ -1,0 +1,10 @@
+*~
+/home/snoopy/video
+/home/snoopy/snpdev
+/home/snoopy/images
+/var/lib/dpkg
+.gvfs
+/home/snoopy/.mozilla/firefox/*/Cache
+/home/snoopy/.mozilla/firefox/*/cookes.*
+/home/snoopy/.mozilla/firefox/*/places.*
+/home/*/.cache

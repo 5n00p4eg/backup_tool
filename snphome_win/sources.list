@@ -1,0 +1,7 @@
+home
+var/log
+var/www
+var/lib
+var/local
+var/mail
+etc
