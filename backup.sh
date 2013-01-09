@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ARGS=`getopt -o "ifvhucd" --long "debug,create,interactive,force,version,verbose,help,usage,profile:" -n "$0" -- "$@"`
+ARGS=`getopt -o "ifvhucd" --long "debug,create,interactive,force,version,verbose,help,usage,profile:,target-device:,target-device-path:" -n "$0" -- "$@"`
 ARGSERR=$?
 
 if [ $ARGSERR -ne "0" ]; then
@@ -18,6 +18,8 @@ VERBOSE=false
 PROFILE=""
 CREATE=false
 DEBUG=false
+TARGET_DEVICE=""
+TARGET_DEVICE_PATH=""
 
 #Load config.
 SCRIPT_DIR=`dirname $0`
@@ -79,6 +81,20 @@ function set_profile() {
   fi
 }
 
+function check_target_device_path() {
+  if [ -h $TARGET_DEVICE ]; then
+    TARGET_DEVICE=`readlink -f "$TARGETDEVICE"`
+  fi
+  TARGET_DEVICE_MOUNT=$(awk -v d=$DEVICE '$1 ~ d { print $2 }' < /proc/mounts)
+  if [ ! $TARGER_DEVICE_MOUNT ] ; then
+    return 1;
+  else
+    echo "Device mounted to $TARGET_DEVICE_MOUNT"
+  fi
+
+    
+}
+
 while true ; do
   case "$1" in
     -i|--interactive) INTERACTIVE=true ; shift ;;
@@ -89,10 +105,15 @@ while true ; do
     -c|--create) CREATE=true ; shift ;; 
     -d|--debug) DEBUG=true ; shift ;;
     --profile) PROFILE=$2 ; shift 2;;
+    --target-device) TARGET_DEVICE=$2 ; shift 2;;
+    --target-device-path) TARGET_DEVICE_PATH=$2; shift 2;;
     --) shift ; break ;;
     *) echo "Error!" ; exit 1 ;;
   esac
 done
+
+#Validtion
+
 
 if [ $1 ] ; then PROFILE=$1; shift; fi
 
