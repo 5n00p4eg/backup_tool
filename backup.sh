@@ -1,9 +1,7 @@
 #!/bin/bash
 
-ARGS=`getopt -o "ifvhuc" --long "create,interactive,force,version,verbose,help,usage,profile:" -n "$0" -- "$@"`
+ARGS=`getopt -o "ifvhucd" --long "debug,create,interactive,force,version,verbose,help,usage,profile:" -n "$0" -- "$@"`
 ARGSERR=$?
-echo "CODE=$ARGSERR"
-echo "ARGS=$ARGS"
 
 if [ $ARGSERR -ne "0" ]; then
   echo "Error"
@@ -19,6 +17,7 @@ FORCE=false
 VERBOSE=false
 PROFILE=""
 CREATE=false
+DEBUG=false
 
 #Load config.
 SCRIPT_DIR=`dirname $0`
@@ -38,39 +37,46 @@ function show_help() {
 }
 
 function check_profile() {
-#  if [ $1 ] && [ -d "$SCRIPT_DIR/$1" ] && [ -f "$SCRIPT_DIR/$1/config.conf" ]; then
-#   echo "Config found";
-#  else
-#    if [ $1 ]; then
-#      echo "$SCRIPT_DIR/$1/config.conf not found"
-#      exit 1;
-#    else
-#      echo "Usage: $0 `hostname`"
-#      exit 1;
-#    fi
-#  fi
-exit 1;
+  if [ $PROFILE ] && [ -d "$SCRIPT_DIR/$PROFILE" ] && [ -f "$SCRIPT_DIR/$PROFILE/config.conf" ]; then
+    echo "Config found";
+  else
+    echo "$SCRIPT_DIR/$PROFILE/config.conf not found"
+    unset -v PROFILE
+  fi
 }
 
 function set_profile() {
-  echo "PROFILE = $PROFILE"
-  if [ ! $PROFILE ] ; then
-    echo "No profile present"
+  check_profile;
+  while [ ! $PROFILE ] ; do
     if $INTERACTIVE ; then 
       if $CREATE ; then
-        #create profile
-        exit 1;
+        echo create profile
       else
-        #Ask for existing profile
-        exit 1;
+        echo "Use \"`hostname`\"? [y/n]"
+        while true ; do
+          read ANSW;
+          case $ANSW in
+            "y") PROFILE="`hostname`"; break ;;
+            "n") break; ;;
+            *) echo "Write \"y\" or \"n\"" ;;
+          esac
+        done
+        check_profile;
+        if [ ! $PROFILE ] ; then
+          echo Ask for existing profile
+          echo "Press CTRL+C to cancel"
+          read PROFILE;
+          check_profile;
+        fi
       fi #End create
-      exit 1;
     else #Not interactive
+      echo "Error, no profile selected"
       exit 1;
     fi
-  else #Profile string present
-    exit 1;
-  fi #End
+  done #End
+  if [ ! $PROFILE ] ; then 
+    exit 1; 
+  fi
 }
 
 while true ; do
@@ -81,6 +87,7 @@ while true ; do
     -h|--help) show_help; exit 0; shift ;;
     -u|--usage) usage; exit 0; shift ;;
     -c|--create) CREATE=true ; shift ;; 
+    -d|--debug) DEBUG=true ; shift ;;
     --profile) PROFILE=$2 ; shift 2;;
     --) shift ; break ;;
     *) echo "Error!" ; exit 1 ;;
@@ -89,25 +96,29 @@ done
 
 if [ $1 ] ; then PROFILE=$1; shift; fi
 
-#echo "Remaining arguments:"
-#for arg do echo '--> '"\`$arg'" ; done
+
+if $DEBUG ; then 
+  echo "Remaining arguments:"; 
+  for arg do echo '--> '"\`$arg'" ; done
+fi
 
 set_profile;
 
+echo "Using $PROFILE profile."
+
 if [ $? != 0 ] ; then echo "Error"; exit 1 ; fi
 
-exit 1;
+if $DEBUG ; then exit 1; fi
 
-. $SCRIPT_DIR/$1/config.conf
+. $SCRIPT_DIR/$PROFILE/config.conf
 
 if [ ! -d "$BUDESTDIR" ]; then
   echo "Dest dir "$BUDESTDIR" not exist"
   exit 1;
 fi
 
-EXCLUDES="$SCRIPT_DIR/$1/exclude.list"
-BUACC="$1"
-BUDEST="$BUDESTDIR/$BUACC"
+EXCLUDES="$SCRIPT_DIR/$PROFILE/exclude.list"
+BUDEST="$BUDESTDIR/$PROFILE"
 BUDIR=`date +%Y-%m-%d`
 DEST="$BUDEST/$BUDIR"
 BUOPTS="--force --ignore-errors --delete-excluded --exclude-from=$EXCLUDES 
@@ -118,9 +129,8 @@ do
   SOURCE="$source"
   CURRENT="$BUDEST/current"
   echo "$SOURCE > $DEST"
-  if [ ! $DEBUG ]; then
+  if ( ! $DEBUG ); then
     #Sudo required for system files backups
-    sudo rsync $BUOPTS $SOURCE $CURRENT
+    rsync $BUOPTS $SOURCE $CURRENT
   fi
-done < $SCRIPT_DIR/$1/sources.list
-
+done < $SCRIPT_DIR/$PROFILE/sources.list
